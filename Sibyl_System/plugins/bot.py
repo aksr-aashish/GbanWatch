@@ -14,10 +14,7 @@ data = []
 DATA_LOCK = asyncio.Lock()
 
 async def can_ban(event):
-    status = False
-    if event.chat.admin_rights:
-        status = event.chat.admin_rights.ban_users
-    return status
+    return event.chat.admin_rights.ban_users if event.chat.admin_rights else False
 
 async def make_proof(user: Union[str, int]):
     if isinstance(user, str) and user.startswith('#'):
@@ -187,17 +184,15 @@ async def check_user(event):
         return
     user = await event.get_user()
     if not user:
-        if System.bot.id in event.action_message.action.users:
-            if (await db.add_chat(event.chat_id)):
-                msg = "Thanks for adding me here!\n"\
-                      "Here are your current settings:\n"\
-                      "Alert: True\n"\
-                      "Alert Mode: Warn"
-                await event.respond(msg)
-            else: # Chat already exists in database
-                return
-        else:
+        if System.bot.id not in event.action_message.action.users:
             return
+        if not (await db.add_chat(event.chat_id)):
+            return
+        msg = "Thanks for adding me here!\n"\
+              "Here are your current settings:\n"\
+              "Alert: True\n"\
+              "Alert Mode: Warn"
+        await event.respond(msg)
     elif user.id in INSPECTORS or user.id in ENFORCERS:
         return
     else:
@@ -216,6 +211,6 @@ async def check_user(event):
                 msg += "Banning them from here."
             else:
                 msg += "I can't ban users here, So just warning."
-                
+
         await event.respond(msg)
         
