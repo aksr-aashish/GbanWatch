@@ -1,3 +1,5 @@
+from ctypes import Union
+
 from Sibyl_System import Sibyl_logs, ENFORCERS, SIBYL, INSPECTORS
 from Sibyl_System.strings import (
     scan_request_string,
@@ -14,7 +16,7 @@ import re
 url_regex = re.compile("(http(s)?://)?t.me/(c/)?(\w+)/(\d+)")
 
 
-def get_data_from_url(url: str) -> tuple:
+def get_data_from_url(url: str) -> Union[bool, tuple[str, str]]:
     """
     >>> get_data_from_url("https://t.me/c/1476401326/36963")
     (1476401326, 36963)
@@ -28,6 +30,7 @@ def get_data_from_url(url: str) -> tuple:
 
 @System.on(system_cmd(pattern=r"scan ", allow_enforcer=True))
 async def scan(event):
+    global sender, target
     replied = await event.get_reply_message()
     flags, reason = seprate_flags(event.text)
     if len(reason.split(" ", 1)) == 1:
@@ -55,7 +58,7 @@ async def scan(event):
         if message.sender_id in ENFORCERS:
             return
         msg = await System.send_message(
-            GbanWatcg_log,
+            Sibyl_logs,
             scan_request_string.format(
                 enforcer=executor,
                 spammer=message.sender_id,
@@ -89,7 +92,7 @@ async def scan(event):
     req_proof = req_user = False
     approve = "f" in flags.keys() and executer.id in INSPECTORS
     if replied.media:
-        await replied.forward_to(GbanWatch_log)
+        await replied.forward_to(Sibyl_logs)
     executor = f"[{executer.first_name}](tg://user?id={executer.id})"
     chat = (
         f"t.me/{event.chat.username}/{event.message.id}"
@@ -98,13 +101,13 @@ async def scan(event):
     )
     await event.reply("Connecting to GbanWatch for a Cymatic scan.")
     if req_proof and req_user:
-        await replied.forward_to(GbanWatch_log)
+        await replied.forward_to(Sibyl_logs)
         await System.gban(
             executer.id, req_user, reason, msg.id, executer, message=replied.text
         )
     if not approve:
         msg = await System.send_message(
-            GbanWatch_log,
+            Sibyl_logs,
             scan_request_string.format(
                 enforcer=executor,
                 spammer=sender,
@@ -115,7 +118,7 @@ async def scan(event):
         )
         return
     msg = await System.send_message(
-        GbanWatch_log,
+        Sibyl_logs,
         forced_scan_string.format(
             ins=executor, spammer=sender, chat=chat, message=replied.text, reason=reason
         ),
@@ -235,7 +238,7 @@ async def reject(event):
         if match:
             # print('Matched OmU')
             id = replied.id
-            await System.edit_message(GbanWatch_log, id, reject_string)
+            await System.edit_message(Sibyl_logs, id, reject_string)
     orig = re.search(r"t.me/(\w+)/(\d+)", replied.text)
     _orig = re.search(r"t.me/c/(\w+)/(\d+)", replied.text)
     flags, reason = seprate_flags(event.text)

@@ -23,4 +23,4 @@ help_plus = """ HERE IS HELP FOR **GbanWatch Bancodes** :-
 
 **THE BANCODE IS DERIVED FROM @SPAMREPORTER**
 """
-__plugin_name__ = "bancodes
+__plugin_name__ = "bancodes"

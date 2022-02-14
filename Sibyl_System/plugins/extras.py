@@ -1,3 +1,5 @@
+import sys
+
 from telethon.utils import resolve_invite_link
 from telethon.tl.functions.channels import LeaveChannelRequest
 from telethon.tl.functions.channels import JoinChannelRequest
