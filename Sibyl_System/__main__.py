@@ -11,6 +11,7 @@ import logging
 import importlib
 import asyncio
 import time
+from telethon import TelegramClient, events, Button, types, functions, errors
 
 logging.basicConfig(
     format="[%(levelname) 5s/%(asctime)s] %(name)s: %(message)s", level=logging.WARNING
@@ -79,20 +80,26 @@ async def stats(event):
     await event.reply(msg)
 
 
+start_msg = """Hi {user}!
+**Myself GbanWatch System , mainly focused on working to reduce spam and scam [admin approval invite links](https://t.me/telegram/153).**
+**__I can__**:
+- __Auto detect illigal activity of telegram requests.__
+- __Auto Push and release Watch From Gban System Requests.__
+`Click the below button to know how to use me!`"""
+start_buttons = [
+    [Button.url("Support", "https://t.me/GbanWatch")],
+    [Button.url("Updates", "https://t.me/GbanWatch")],
+]
+
+
 @System.on(system_cmd(pattern=r"help", allow_slash=False, allow_inspectors=True))
 async def send_help(event):
-    try:
-        help_for = event.text.split(" ", 1)[1].lower()
-    except IndexError:
-        msg = "List of plugins with help text:\n"
-        for x in HELP.keys():
-            msg += f"`{x.capitalize()}`\n"
-        await event.reply(msg)
-        return
-    if help_for in HELP:
-        await event.reply(HELP[help_for].help_plus)
-    else:
-        return
+    from_ = await System.get_entity(event.sender_id)
+    await event.reply(
+        start_msg.format(user=from_.first_name),
+        buttons=start_buttons,
+        link_preview=False,
+    )
 
 
 async def main():
@@ -112,6 +119,7 @@ async def main():
     else:
         await System.send_message(Sibyl_logs, "I'm up!")
     await System.run_until_disconnected()
+
 
 if __name__ == "__main__":
     asyncio.get_event_loop().run_until_complete(main())
